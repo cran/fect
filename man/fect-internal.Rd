@@ -1,4 +1,4 @@
-
+\encoding{UTF-8}
 \name{fect-internal}
 \alias{XXinv}
 \alias{beta_iter}
@@ -42,8 +42,8 @@
 \alias{panel_fe_ub}
 \alias{fect.default}
 \alias{fect.formula}
-\alias{fect.fe}
-\alias{fect.mc}
+\alias{fect_fe}
+\alias{fect_mc}
 \alias{interFE.default}
 \alias{interFE.formula}
 \alias{cv.sample}
