@@ -1,8 +1,8 @@
 Package: fect
 Type: Package
 Title: Fixed Effects Counterfactual Estimators
-Version: 2.0.5
-Date: 2025-08-25
+Version: 2.1.0
+Date: 2026-01-15
 Authors@R: 
     c(person("Licheng", "Liu", , "lichengl@stanford.edu", role = c("aut")), 
       person("Ziyi", "Liu", , "zyliu2023@berkeley.edu", role = c("aut")),
@@ -11,23 +11,6 @@ Authors@R:
       person("Tianzhu", "Qin", , "tianzhu@stanford.edu", role = c("aut")),
       person("Shiyun", "Hu", , "hushiyun@pku.edu.cn", role = c("aut")),
       person("Rivka", "Lipkovitz", , "rivkal@mit.edu", role = c("aut")))
-Maintainer: Yiqing Xu <yiqingxu@stanford.edu>
-Description: Provides tools for estimating causal effects in panel data using counterfactual methods, as well as other modern DID estimators. It is designed for causal panel analysis with binary treatments under the parallel trends assumption. The package supports scenarios where treatments can switch on and off and allows for limited carryover effects. It includes several imputation estimators, such as Gsynth (Xu 2017), linear factor models, and the matrix completion method. Detailed methodology is described in Liu, Wang, and Xu (2024) <doi:10.48550/arXiv.2107.00856> and Chiu et al. (2025) <doi:10.48550/arXiv.2309.15983>. Optionally integrates with the "HonestDiDFEct" package for sensitivity analyses compatible with imputation estimators. "HonestDiDFEct" is not on CRAN but can be obtained from <https://github.com/lzy318/HonestDiDFEct>.
-URL: https://yiqingxu.org/packages/fect/
-NeedsCompilation: yes
-License: MIT + file LICENSE
-Imports: Rcpp (>= 0.12.3), ggplot2 (>= 2.1.0), GGally (>= 1.0.1),
-        doParallel (>= 1.0.10), foreach (>= 1.4.3), abind (>= 1.4-0),
-        MASS, gridExtra, grid, fixest, doRNG, future, mvtnorm, dplyr,
-        future.apply, reshape2, rlang, scales
-Suggests: panelView, testthat (>= 3.0.0), did, DIDmultiplegtDYN,
-        ggrepel, HonestDiDFEct
-Depends: R (>= 4.1.0)
-LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.3.2
-Packaged: 2025-08-25 09:05:00 UTC; yiqingxu
-Encoding: UTF-8
-Config/testthat/edition: 3
 Author: Licheng Liu [aut],
   Ziyi Liu [aut],
   Ye Wang [aut],
@@ -35,5 +18,25 @@ Author: Licheng Liu [aut],
   Tianzhu Qin [aut],
   Shiyun Hu [aut],
   Rivka Lipkovitz [aut]
+Maintainer: Yiqing Xu <yiqingxu@stanford.edu>
+Description: Provides tools for estimating causal effects in panel data using counterfactual methods, as well as other modern DID estimators. It is designed for causal panel analysis with binary treatments under the parallel trends assumption. The package supports scenarios where treatments can switch on and off and allows for limited carryover effects. It includes several imputation estimators, such as Gsynth (Xu 2017), linear factor models, and the matrix completion method. Detailed methodology is described in Liu, Wang, and Xu (2024) <doi:10.48550/arXiv.2107.00856> and Chiu et al. (2025) <doi:10.48550/arXiv.2309.15983>. Optionally integrates with the "HonestDiDFEct" package for sensitivity analyses compatible with imputation estimators. "HonestDiDFEct" is not on CRAN but can be obtained from <https://github.com/lzy318/HonestDiDFEct>.
+URL: https://yiqingxu.org/packages/fect/,
+        https://github.com/xuyiqing/fect
+BugReports: https://github.com/xuyiqing/fect/issues
+NeedsCompilation: yes
+License: MIT + file LICENSE
+Imports: Rcpp (>= 0.12.3), ggplot2 (>= 2.1.0), GGally (>= 1.0.1),
+        doParallel (>= 1.0.10), doFuture, foreach (>= 1.4.3), abind (>=
+        1.4-0), MASS, gridExtra, grid, fixest, doRNG, future,
+        parallelly, mvtnorm, dplyr, future.apply, reshape2, rlang,
+        scales
+Suggests: panelView, testthat (>= 3.0.0), did, DIDmultiplegtDYN,
+        ggrepel, HonestDiDFEct
+Depends: R (>= 4.1.0)
+LinkingTo: Rcpp, RcppArmadillo
+RoxygenNote: 7.3.2
+Packaged: 2026-01-17 00:07:45 UTC; yiqingxu
+Encoding: UTF-8
+Config/testthat/edition: 3
 Repository: CRAN
-Date/Publication: 2025-08-25 12:20:02 UTC
+Date/Publication: 2026-01-17 09:20:02 UTC
