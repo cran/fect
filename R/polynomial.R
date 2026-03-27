@@ -7,6 +7,7 @@ fect_polynomial <- function(Y, # Outcome variable, (T*N) matrix
                             W,
                             I,
                             II,
+                            II.cm = NULL,
                             T.on,
                             T.off = NULL,
                             T.on.carry = NULL,
@@ -774,8 +775,6 @@ fect_polynomial <- function(Y, # Outcome variable, (T*N) matrix
         eff.pre.equiv = eff.pre.equiv,
         sigma2.pre = sigma2.pre
     )
-
-    # print(att.on)
 
     if (hasRevs == 1) {
         out <- c(out, list(

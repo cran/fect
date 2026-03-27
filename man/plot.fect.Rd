@@ -14,6 +14,7 @@
     highlight = NULL,
     plot.ci = NULL,
     show.points = TRUE,
+    loess.fit = TRUE,
     show.group = NULL,
     bound = NULL,
     show.count = TRUE,
@@ -73,6 +74,8 @@
     connected = NULL,
     ci.outline = FALSE,
     color =  NULL,
+    pre.color = NULL,
+    post.color = NULL,
     est.lwidth = NULL,
     est.pointsize = NULL,
     count.color =  NULL,
@@ -108,6 +111,12 @@
     status.background.color = NULL,
     covariate = NULL,
     covariate.labels = NULL,
+    covariate.value = NULL,
+    covariate.value.range = FALSE,
+    relative.time = FALSE,
+    pretreatment = FALSE,
+    num.pretreatment = 3,
+    cm = FALSE,
     ...
 )
 }
@@ -183,6 +192,8 @@
   \item{connected}{Logical or \code{NULL} (default). For event study type plots (e.g., \code{type="gap"}), if \code{TRUE}, connects points with lines; if \code{FALSE}, shows point-ranges. If \code{NULL}, defaults to \code{FALSE} for the base style, and \code{TRUE} if \code{preset = "vibrant"}.}
   \item{ci.outline}{Logical; if \code{FALSE} (default). For event study plots where CIs are shown as ribbons, if \code{TRUE}, adds an outline to the CI ribbon.}
   \item{color}{Character string or \code{NULL} (default). If \code{NULL}, uses a default color for main plot lines/points (e.g., \code{"black"} for the base style). The \code{preset} argument may define a different color. Specifying this argument directly overrides any \code{preset} or base style setting.}
+  \item{pre.color}{Character string or \code{NULL} (default). Color for pre-treatment period estimates. If \code{NULL}, uses the value of \code{color}.}
+  \item{post.color}{Character string or \code{NULL} (default). Color for post-treatment period estimates. If \code{NULL}, uses the value of \code{color}.}
   \item{est.lwidth}{Numeric or \code{NULL}; line width for the main estimate line in event study plots. If \code{NULL} (default), the width is determined based on \code{connected} and \code{show.points} (e.g., `0.6` for point-ranges with the base style, `0.7` for connected points with markers with the base style). The \code{preset} argument may influence this default. Specifying a numeric value directly overrides any other setting.}
   \item{est.pointsize}{Numeric or \code{NULL}; size of points for the main estimate in event study plots. If \code{NULL} (default), the size is determined based on \code{connected} and \code{show.points} (e.g., `2` for point-ranges with the base style, `1.2` for connected points with markers with the base style). The \code{preset} argument may influence this default. Specifying a numeric value directly overrides any other setting.}
   \item{count.color}{Character string or \code{NULL} (default). If \code{NULL}, uses a default color for count bars (e.g., \code{"grey70"} for the base style). The \code{preset} argument may define a different color. Specifying this argument directly overrides any \code{preset} or base style setting.}
@@ -218,6 +229,13 @@
   \item{status.background.color}{Character string or \code{NULL} (default). If \code{NULL}, uses a default background color for status plots (e.g., \code{"gray90"} for the base style). The \code{preset} argument may define a different color. Specifying this argument directly overrides any \code{preset} or base style setting.}
   \item{covariate}{Character string or \code{NULL} (default). If \code{NULL}, uses a default covariate for heterogeneous plots (e.g., \code{"X"} for the base style). The \code{preset} argument may define a different covariate. Specifying this argument directly overrides any \code{preset} or base style setting.}
   \item{covariate.labels}{Character vector or \code{NULL} (default). If \code{NULL}, uses a default covariate labels for heterogeneous plots (e.g., \code{"X1"} for the base style). The \code{preset} argument may define a different covariate labels. Specifying this argument directly overrides any \code{preset} or base style setting.}
+  \item{covariate.value}{Numeric or \code{NULL} (default); a specific covariate value at which to evaluate the HTE plot. If \code{NULL}, the full range is used.}
+  \item{covariate.value.range}{Logical; if \code{TRUE}, plots HTE over the range of covariate values. Default is \code{FALSE}.}
+  \item{relative.time}{Logical; if \code{TRUE}, uses relative time (time since treatment) on the x-axis for HTE plots. Default is \code{FALSE}.}
+  \item{pretreatment}{Logical; if \code{TRUE}, restricts HTE analysis to pre-treatment periods only. Default is \code{FALSE}.}
+  \item{num.pretreatment}{Integer; number of pre-treatment periods to include when \code{pretreatment = TRUE}. Default is \code{3}.}
+  \item{cm}{Logical; if \code{TRUE}, plots causal moderation estimates instead of effect modification estimates for HTE plots. Requires the \code{fect} object to have been estimated with \code{cm = TRUE}. Default is \code{FALSE}.}
+  \item{loess.fit}{Logical; if \code{TRUE} (default), overlays a LOESS smoothing curve on HTE scatter plots.}
   \item{...}{Additional graphical parameters passed to internal plotting routines, primarily those accepted by \code{esplot} for event study style plots (gap, equiv, exit, sens_es, cumul).}
 }
 \details{

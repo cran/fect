@@ -7,6 +7,8 @@ fect_fe <- function(Y, # Outcome variable, (T*N) matrix
                     W,
                     I,
                     II,
+                    cm = FALSE,
+                    II.cm = NULL,
                     T.on,
                     T.off = NULL,
                     T.on.carry = NULL,
@@ -45,6 +47,7 @@ fect_fe <- function(Y, # Outcome variable, (T*N) matrix
     ## unit id and time
     TT <- dim(Y)[1]
     N <- dim(Y)[2]
+    r.cv <- min(r.cv, TT, N)
     if (is.null(X) == FALSE) {
         p <- dim(X)[3]
     } else {
@@ -52,9 +55,6 @@ fect_fe <- function(Y, # Outcome variable, (T*N) matrix
         X <- array(0, dim = c(1, 1, 0))
     }
 
-    ## replicate data
-    YY <- Y
-    YY[which(II == 0)] <- 0 ## reset to 0
 
     D.c <- apply(D, 2, function(vec) {
         cumsum(vec)
@@ -75,63 +75,87 @@ fect_fe <- function(Y, # Outcome variable, (T*N) matrix
             data.ini[, (3 + i)] <- c(X[, , i])
         }
     }
-    ## observed Y0 indicator:
-    initialOut <- Y0 <- beta0 <- FE0 <- xi0 <- factor0 <- NULL
-    oci <- which(c(II) == 1)
-    if (binary == FALSE) {
-        if (!is.null(W)) {
-            initialOut <- initialFit(data = data.ini, force = force, w = c(W), oci = oci)
-        } else {
-            initialOut <- initialFit(data = data.ini, force = force, w = NULL, oci = oci)
-        }
-        Y0 <- initialOut$Y0
-        beta0 <- initialOut$beta0
-        if (p > 0 && sum(is.na(beta0)) > 0) {
-            beta0[which(is.na(beta0))] <- 0
-        }
-
-        ## ini.res <- initialOut$res
-    } else {
-        initialOut <- BiInitialFit(data = data.ini, QR = QR, r = r.cv, force = force, oci = oci)
-        Y0 <- initialOut$Y0
-        beta0 <- initialOut$beta0
-        FE0 <- initialOut$FE0
-        if (QR == 1) {
-            xi0 <- initialOut$xi0
-            factor0 <- initialOut$factor0
-        }
-    }
-
-    ## -------------------------------##
-    ## ----------- Main Algorithm ----------- ##
-    ## -------------------------------##
 
     validX <- 1 ## no multi-colinearity
-    est.fect <- NULL
 
-    if (is.null(W)) {
-        W.use <- as.matrix(0)
-    } else {
-        W.use <- W
-        W.use[which(II == 0)] <- 0
-    }
+    calculate_estimation <- function(data.ini, Y, II, W, binary, QR, force, r.cv, tol, max.iteration, oci_override = NULL) {
+        ## observed Y0 indicator:
+        initialOut <- Y0 <- beta0 <- FE0 <- xi0 <- factor0 <- NULL
 
-    if (binary == FALSE) {
-        est.best <- inter_fe_ub(YY, Y0, X, II, W.use, beta0, r.cv, force = force, tol, max.iteration)
-        if (boot == FALSE) {
-            if (r.cv == 0) {
-                est.fect <- est.best
+        oci <- if (is.null(oci_override)) which(c(II) == 1) else oci_override
+        if (binary == FALSE) {
+            if (!is.null(W)) {
+                initialOut <- initialFit(data = data.ini, force = force, w = c(W), oci = oci)
             } else {
-                est.fect <- inter_fe_ub(YY, Y0, X, II, W.use, beta0, 0, force = force, tol, max.iteration)
+                initialOut <- initialFit(data = data.ini, force = force, w = NULL, oci = oci)
+            }
+            Y0 <- initialOut$Y0
+            beta0 <- initialOut$beta0
+            if (p > 0 && sum(is.na(beta0)) > 0) {
+                beta0[which(is.na(beta0))] <- 0
+            }
+
+            ## ini.res <- initialOut$res
+        } else {
+            initialOut <- BiInitialFit(data = data.ini, QR = QR, r = r.cv, force = force, oci = oci)
+            Y0 <- initialOut$Y0
+            beta0 <- initialOut$beta0
+            FE0 <- initialOut$FE0
+            if (QR == 1) {
+                xi0 <- initialOut$xi0
+                factor0 <- initialOut$factor0
             }
         }
-    } else {
-        if (QR == FALSE) {
-            est.best <- inter_fe_d_ub(YY, Y0, FE0, X, II, r.cv, force, tol = tol)
+        
+        ## -------------------------------##
+        ## ----------- Main Algorithm ----------- ##
+        ## -------------------------------##
+
+        est.fect <- NULL
+
+        if (is.null(W)) {
+            W.use <- as.matrix(0)
         } else {
-            est.best <- inter_fe_d_qr_ub(YY, Y0, FE0, factor0, xi0, X, II, r.cv, force, tol = tol)
+            W.use <- W
+            W.use[which(II == 0)] <- 0
         }
+
+        YY <- Y
+        YY[which(II == 0)] <- 0 ## reset to 0
+
+        if (binary == FALSE) {
+            est.best <- inter_fe_ub(YY, Y0, X, II, W.use, beta0, r.cv, force = force, tol, max.iteration)
+            if (boot == FALSE) {
+                if (r.cv == 0) {
+                    est.fect <- est.best
+                } else {
+                    est.fect <- inter_fe_ub(YY, Y0, X, II, W.use, beta0, 0, force = force, tol, max.iteration)
+                }
+            }
+        } else {
+            if (QR == FALSE) {
+                est.best <- inter_fe_d_ub(YY, Y0, FE0, X, II, r.cv, force, tol = tol)
+            } else {
+                est.best <- inter_fe_d_qr_ub(YY, Y0, FE0, factor0, xi0, X, II, r.cv, force, tol = tol)
+            }
+        }
+    
+        return(list(est.best = est.best, est.fect = est.fect))
     }
+
+    estimation.D0 <- calculate_estimation(data.ini, Y, II, W, binary, QR, force, r.cv, tol, max.iteration)
+    est.best <- estimation.D0$est.best
+    est.fect <- estimation.D0$est.fect
+
+    if (cm == TRUE) {
+        estimation.D1 <- calculate_estimation(
+            data.ini, Y, II.cm, W, binary, QR, force, r.cv, tol, max.iteration,
+            # initialize using all observed outcomes to avoid NA predictions for unseen FE levels
+            oci_override = which(c(I) == 1)
+        )
+        est.best.cm <- estimation.D1$est.best
+    }
+
     validX <- est.best$validX
     validF <- ifelse(r.cv > 0, 1, 0)
 
@@ -174,8 +198,8 @@ fect_fe <- function(Y, # Outcome variable, (T*N) matrix
         ## ini.res <- ini.res * norm.para[1]
         if (boot == FALSE) {
             est.fect$fit <- est.fect$fit * norm.para[1]
+            est.fect$sigma2 <- est.fect$sigma2 * (norm.para[1]^2)
         }
-        est.fect$sigma2 <- est.fect$sigma2 * norm.para[1]
     }
 
     ## 0. relevant parameters
@@ -217,19 +241,34 @@ fect_fe <- function(Y, # Outcome variable, (T*N) matrix
         eff[which(I == 0)] <- NA
     }
     complete.index <- which(!is.na(eff))
-    att.avg <- sum(eff[complete.index] * D[complete.index]) / (sum(D[complete.index]))
+    denom <- sum(D[complete.index])
+    att.avg <- if (denom > 0) {
+        sum(eff[complete.index] * D[complete.index]) / denom
+    } else {
+        NA
+    }
 
     # balance effect
     att.avg.balance <- NA
     if (!is.null(balance.period)) {
         complete.index2 <- which(!is.na(T.on.balance))
-        att.avg.balance <- sum(eff[complete.index2] * D[complete.index2]) / (sum(D[complete.index2]))
+        denom.balance <- sum(D[complete.index2])
+        att.avg.balance <- if (denom.balance > 0) {
+            sum(eff[complete.index2] * D[complete.index2]) / denom.balance
+        } else {
+            NA
+        }
     }
 
     # weighted effect
     att.avg.W <- NA
     if (!is.null(W)) {
-        att.avg.W <- sum(eff[complete.index] * D[complete.index] * W[complete.index]) / (sum(D[complete.index] * W[complete.index]))
+        denom.W <- sum(D[complete.index] * W[complete.index])
+        att.avg.W <- if (denom.W > 0) {
+            sum(eff[complete.index] * D[complete.index] * W[complete.index]) / denom.W
+        } else {
+            NA
+        }
     }
 
 
@@ -247,7 +286,12 @@ fect_fe <- function(Y, # Outcome variable, (T*N) matrix
     ## att.avg.unit
     tr.pos <- which(apply(D, 2, sum) > 0)
     att.unit <- sapply(1:length(tr.pos), function(vec) {
-        return(sum(eff[, tr.pos[vec]] * D[, tr.pos[vec]]) / sum(D[, tr.pos[vec]]))
+        d <- sum(D[, tr.pos[vec]])
+        if (d > 0) {
+            return(sum(eff[, tr.pos[vec]] * D[, tr.pos[vec]]) / d)
+        } else {
+            return(NA)
+        }
     })
     att.avg.unit <- mean(att.unit, na.rm = TRUE)
 
@@ -258,7 +302,12 @@ fect_fe <- function(Y, # Outcome variable, (T*N) matrix
             eff.equiv[which(I == 0)] <- NA
         }
         complete.index <- which(!is.na(eff.equiv))
-        equiv.att.avg <- sum(eff.equiv[complete.index] * D[complete.index]) / (sum(D[complete.index]))
+        denom.equiv <- sum(D[complete.index])
+        equiv.att.avg <- if (denom.equiv > 0) {
+            sum(eff.equiv[complete.index] * D[complete.index]) / denom.equiv
+        } else {
+            NA
+        }
     }
 
     ## 2. rmse for treated units' observations under control
@@ -462,17 +511,19 @@ fect_fe <- function(Y, # Outcome variable, (T*N) matrix
         rm.pos3 <- which(is.na(t.off))
         eff.v.use2 <- eff.v
         t.off.use <- t.off
+        n.off.use <- rep(1:N, each = TT)
         if (NA %in% eff.v | NA %in% t.off) {
             eff.v.use2 <- eff.v[-c(rm.pos1, rm.pos3)]
             t.off.use <- t.off[-c(rm.pos1, rm.pos3)]
+            n.off.use <- n.off.use[-c(rm.pos1, rm.pos3)]
         }
 
         off.pos <- which(t.off.use > 0)
-        eff.off <- cbind(eff.v.use2[off.pos], t.off.use[off.pos], n.on.use[off.pos])
+        eff.off <- cbind(eff.v.use2[off.pos], t.off.use[off.pos], n.off.use[off.pos])
         colnames(eff.off) <- c("eff", "period", "unit")
 
         if (binary == FALSE && boot == FALSE) {
-            eff.off.equiv <- cbind(eff.equiv.v[off.pos], t.off.use[off.pos], n.on.use[off.pos])
+            eff.off.equiv <- cbind(eff.equiv.v[off.pos], t.off.use[off.pos], n.off.use[off.pos])
             colnames(eff.off.equiv) <- c("off.equiv", "period", "unit")
             off.sd <- tapply(eff.off.equiv[, 1], eff.off.equiv[, 2], sd)
             off.sd <- cbind(off.sd, sort(unique(eff.off.equiv[, 2])), table(eff.off.equiv[, 2]))
@@ -756,6 +807,7 @@ fect_fe <- function(Y, # Outcome variable, (T*N) matrix
         Y = Y,
         X = X,
         eff = eff,
+        eff.tr = eff[, tr],
         I = I,
         II = II,
         att.avg = att.avg,
@@ -893,5 +945,10 @@ fect_fe <- function(Y, # Outcome variable, (T*N) matrix
             group.output = group.output
         ))
     }
+
+    if (cm == TRUE) {
+        out <- c(out, list(est.cm = est.best.cm))
+    }
+
     return(out)
 } ## fe functions ends.
