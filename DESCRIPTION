@@ -1,8 +1,8 @@
 Package: fect
 Type: Package
 Title: Fixed Effects Counterfactual Estimators
-Version: 2.2.0
-Date: 2026-03-20
+Version: 2.4.1
+Date: 2026-04-29
 Authors@R: 
     c(person("Licheng", "Liu", , "lichengl@stanford.edu", role = c("aut")), 
       person("Ziyi", "Liu", , "zyliu2023@berkeley.edu", role = c("aut")),
@@ -34,10 +34,10 @@ Suggests: panelView, testthat (>= 3.0.0), did, DIDmultiplegtDYN,
         ggrepel, HonestDiDFEct
 Depends: R (>= 4.1.0)
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.3.2
-Packaged: 2026-03-26 22:09:02 UTC; yiqingxu
+RoxygenNote: 7.3.3
+Packaged: 2026-04-29 21:35:21 UTC; yiqingxu
 Encoding: UTF-8
 Config/testthat/edition: 3
 LazyData: true
 Repository: CRAN
-Date/Publication: 2026-03-27 17:40:02 UTC
+Date/Publication: 2026-04-30 08:50:03 UTC
